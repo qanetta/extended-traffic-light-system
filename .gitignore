@@ -6,3 +6,8 @@ Release/
 *.map
 *.su
 .metadata/
+
+# Backup / file tam
+*.bak
+_backup*/
+*.launch
