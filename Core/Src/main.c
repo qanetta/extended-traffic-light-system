@@ -65,7 +65,8 @@ static void MX_IWDG_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+static void test_wdg_refresh(void){ HAL_IWDG_Refresh(&hiwdg); }
+static void test_one_shot(void){ HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_SET); }
 /* USER CODE END 0 */
 
 /**
@@ -101,7 +102,11 @@ int main(void)
   MX_I2C1_Init();
   MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
-
+  SCH_Init();
+  SCH_Add_Task(test_wdg_refresh, 0, SCH_MS(100));
+  SCH_Add_Task(ledBlinking, 0, SCH_MS(500));
+  SCH_Add_Task(test_one_shot, SCH_MS(3000), 0);
+  HAL_TIM_Base_Start_IT(&htim2);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -111,6 +116,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	SCH_Dispatch_Tasks();
   }
   /* USER CODE END 3 */
 }
@@ -369,7 +375,10 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  if (htim->Instance == TIM2) SCH_Update();
+}
 /* USER CODE END 4 */
 
 /**

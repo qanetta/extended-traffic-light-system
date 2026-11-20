@@ -41,6 +41,19 @@ static uint32_t sch_insert(void (*pFunc)(void), uint32_t delay, uint32_t period,
 	return id;
 }
 
+/* Xoa task o vi tri i. */
+static void sch_remove_at(uint8_t i){
+	/* Thoi gian cua task bi xoa cong don sang task ke tiep de cac task phia sau giu dung thoi diem */
+	if (i + 1 < SCH_count) SCH_tasks_G[i + 1].Delay += SCH_tasks_G[i].Delay;
+
+	for (uint8_t k = i; k + 1 < SCH_count; k++) SCH_tasks_G[k] = SCH_tasks_G[k + 1];
+	SCH_count--;
+
+	SCH_tasks_G[SCH_count].pTask  = 0;
+	SCH_tasks_G[SCH_count].TaskID = NO_TASK_ID;
+	sch_mark_head();
+}
+
 static uint32_t sch_new_id(void){
 	if (++SCH_next_id == NO_TASK_ID) SCH_next_id = 1;   /* tran 32 bit thi bo qua 0 */
 	return SCH_next_id;
@@ -63,4 +76,24 @@ void SCH_Init(void){
 uint32_t SCH_Add_Task(void (*pFunc)(void), uint32_t DELAY, uint32_t PERIOD){
 	if (pFunc == 0) return NO_TASK_ID;
 	return (SCH_count < SCH_MAX_TASKS) ? sch_insert(pFunc, DELAY, PERIOD, sch_new_id()) : NO_TASK_ID;
+}
+
+/* O(1): chi xet task dau danh sach */
+void SCH_Update(void){
+	if (SCH_count == 0) return;
+	if (SCH_tasks_G[0].Delay > 0) SCH_tasks_G[0].Delay--;
+	if (SCH_tasks_G[0].Delay == 0) SCH_tasks_G[0].RunMe = 1;
+}
+
+void SCH_Dispatch_Tasks(void){
+	/* Chay het cac task da den han (co the nhieu task cung han) */
+	while (SCH_count > 0 && SCH_tasks_G[0].RunMe){
+		sTask t = SCH_tasks_G[0];
+		sch_remove_at(0);                 /* task ke tiep cung han (Delay = 0) se duoc danh dau RunMe */
+		t.pTask();
+
+		/* Task tuan hoan: them lai, giu nguyen TaskID.
+		 * One-shot (Period = 0): khong them lai -> tu xoa khoi danh sach */
+		if (t.Period > 0) sch_insert(t.pTask, t.Period, t.Period, t.TaskID);
+	}
 }
