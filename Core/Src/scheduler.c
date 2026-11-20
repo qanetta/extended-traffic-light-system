@@ -78,6 +78,17 @@ uint32_t SCH_Add_Task(void (*pFunc)(void), uint32_t DELAY, uint32_t PERIOD){
 	return (SCH_count < SCH_MAX_TASKS) ? sch_insert(pFunc, DELAY, PERIOD, sch_new_id()) : NO_TASK_ID;
 }
 
+uint8_t SCH_Delete_Task(uint32_t taskID){
+	if (taskID == NO_TASK_ID) return 0;
+	for (uint8_t i = 0; i < SCH_count; i++){
+		if (SCH_tasks_G[i].TaskID == taskID){
+			sch_remove_at(i);
+			return 1;
+		}
+	}
+	return 0;
+}
+
 /* O(1): chi xet task dau danh sach */
 void SCH_Update(void){
 	if (SCH_count == 0) return;

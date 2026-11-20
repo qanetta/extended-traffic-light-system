@@ -29,6 +29,7 @@ typedef struct {
 
 void     SCH_Init(void);
 uint32_t SCH_Add_Task(void (*pFunc)(void), uint32_t DELAY, uint32_t PERIOD);   /* tra ve TaskID, NO_TASK_ID neu day */
+uint8_t  SCH_Delete_Task(uint32_t taskID);                                      /* 1 = da xoa, 0 = khong tim thay */
 void     SCH_Update(void);           /* goi trong ngat timer */
 void     SCH_Dispatch_Tasks(void);   /* goi trong while(1) */
 #endif /* SCHEDULER_H */
