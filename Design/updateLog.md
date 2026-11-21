@@ -1,3 +1,6 @@
+v3_0
+- Thêm Activity Diagram cho Init, Scheduler và chỉnh Mode
+
 v2_1
 - Thêm danh sách các Task
 - Không bắt buộc phải thực hiện chức năng FR-15 (task ledBlinking)
