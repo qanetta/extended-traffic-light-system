@@ -12,6 +12,10 @@ static uint32_t SCH_next_id;          /* ID cap cho task ke tiep (bo qua 0) */
 static volatile uint32_t SCH_ticks;        /* tong so tick tu luc khoi dong */
 static volatile uint32_t SCH_lost_ticks;   /* so tick troi qua khi task dau da den han ma chua duoc chay */
 
+/* Task dang chay trong SCH_Dispatch_Tasks: neu no tu xoa chinh minh thi khong them lai */
+static uint32_t SCH_running_id = NO_TASK_ID;
+static uint8_t  SCH_running_deleted;
+
 /* ---------------- Vung gang (critical section) ----------------
  * SCH_Update chay trong ngat va sua SCH_tasks_G[0]. Neu vong while dang dich mang
  * ma ngat chen vao giua thi du lieu hong -> tat ngat trong luc sua mang.
@@ -104,6 +108,13 @@ uint32_t SCH_Add_Task(void (*pFunc)(void), uint32_t DELAY, uint32_t PERIOD){
 
 uint8_t SCH_Delete_Task(uint32_t taskID){
 	if (taskID == NO_TASK_ID) return 0;
+
+	/* Task dang chay da duoc lay ra khoi mang -> chi danh dau de dispatcher khong them lai */
+	if (taskID == SCH_running_id){
+		SCH_running_deleted = 1;
+		return 1;
+	}
+
 	uint32_t pm = sch_lock();
 	for (uint8_t i = 0; i < SCH_count; i++){
 		if (SCH_tasks_G[i].TaskID == taskID){
@@ -153,6 +164,8 @@ void SCH_Dispatch_Tasks(void){
 		/* Lay task dau ra khoi mang. Task ke tiep co Delay = 0 (cung han) se duoc danh dau RunMe */
 		sTask t = SCH_tasks_G[0];
 		sch_remove_at(0);
+		SCH_running_id      = t.TaskID;
+		SCH_running_deleted = 0;
 		uint32_t ticks_before = SCH_ticks;
 		uint32_t lost_before  = SCH_lost_ticks;
 		sch_unlock(pm);
@@ -161,7 +174,7 @@ void SCH_Dispatch_Tasks(void){
 
 		/* Task tuan hoan: them lai, giu nguyen TaskID.
 		 * One-shot (Period = 0): khong them lai -> tu xoa khoi danh sach */
-		if (t.Period > 0){
+		if (t.Period > 0 && !SCH_running_deleted){
 			pm = sch_lock();
 			/* Neu task chay vat qua ranh gioi tick, cac tick do da duoc tru vao danh sach
 			 * -> tru bot cho task nay de lan chay ke tiep van dung moc Period (khong troi) */
@@ -170,5 +183,6 @@ void SCH_Dispatch_Tasks(void){
 			sch_insert(t.pTask, delay, t.Period, t.TaskID);
 			sch_unlock(pm);
 		}
+		SCH_running_id = NO_TASK_ID;
 	}
 }
