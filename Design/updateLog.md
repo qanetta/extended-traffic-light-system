@@ -1,3 +1,6 @@
+v4_0
+- Thêm Sequence Diagram cho Mode, DHT20 và chỉnh giờ
+
 v3_0
 - Thêm Activity Diagram cho Init, Scheduler và chỉnh Mode
 
