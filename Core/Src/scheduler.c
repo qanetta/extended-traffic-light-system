@@ -9,6 +9,7 @@ static uint8_t  SCH_count;            /* so task dang co trong mang */
 static uint32_t SCH_next_id;          /* ID cap cho task ke tiep (bo qua 0) */
 
 /* Dung chung voi ngat TIM2 -> volatile */
+static volatile uint32_t SCH_ticks;        /* tong so tick tu luc khoi dong */
 static volatile uint32_t SCH_lost_ticks;   /* so tick troi qua khi task dau da den han ma chua duoc chay */
 
 /* ---------------- Vung gang (critical section) ----------------
@@ -117,6 +118,7 @@ uint8_t SCH_Delete_Task(uint32_t taskID){
 
 /* O(1): chi xet task dau danh sach */
 void SCH_Update(void){
+	SCH_ticks++;
 	if (SCH_count == 0) return;
 
 	/* Task dau da den han nhung vong while chua kip chay (vi task truoc chay qua 10 ms):
@@ -151,6 +153,8 @@ void SCH_Dispatch_Tasks(void){
 		/* Lay task dau ra khoi mang. Task ke tiep co Delay = 0 (cung han) se duoc danh dau RunMe */
 		sTask t = SCH_tasks_G[0];
 		sch_remove_at(0);
+		uint32_t ticks_before = SCH_ticks;
+		uint32_t lost_before  = SCH_lost_ticks;
 		sch_unlock(pm);
 
 		t.pTask();                        /* chay ngoai vung khoa: ngat TIM2 van hoat dong */
@@ -159,7 +163,11 @@ void SCH_Dispatch_Tasks(void){
 		 * One-shot (Period = 0): khong them lai -> tu xoa khoi danh sach */
 		if (t.Period > 0){
 			pm = sch_lock();
-			sch_insert(t.pTask, t.Period, t.Period, t.TaskID);
+			/* Neu task chay vat qua ranh gioi tick, cac tick do da duoc tru vao danh sach
+			 * -> tru bot cho task nay de lan chay ke tiep van dung moc Period (khong troi) */
+			uint32_t applied = (SCH_ticks - ticks_before) - (SCH_lost_ticks - lost_before);
+			uint32_t delay   = (t.Period > applied) ? t.Period - applied : 0;
+			sch_insert(t.pTask, delay, t.Period, t.TaskID);
 			sch_unlock(pm);
 		}
 	}
