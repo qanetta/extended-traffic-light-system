@@ -8,6 +8,9 @@ static sTask    SCH_tasks_G[SCH_MAX_TASKS];
 static uint8_t  SCH_count;            /* so task dang co trong mang */
 static uint32_t SCH_next_id;          /* ID cap cho task ke tiep (bo qua 0) */
 
+/* Dung chung voi ngat TIM2 -> volatile */
+static volatile uint32_t SCH_lost_ticks;   /* so tick troi qua khi task dau da den han ma chua duoc chay */
+
 /* ---------------- Vung gang (critical section) ----------------
  * SCH_Update chay trong ngat va sua SCH_tasks_G[0]. Neu vong while dang dich mang
  * ma ngat chen vao giua thi du lieu hong -> tat ngat trong luc sua mang.
@@ -86,6 +89,7 @@ void SCH_Init(void){
 	}
 	SCH_count      = 0;
 	SCH_next_id    = 0;
+	SCH_lost_ticks = 0;
 	sch_unlock(pm);
 }
 
@@ -114,6 +118,13 @@ uint8_t SCH_Delete_Task(uint32_t taskID){
 /* O(1): chi xet task dau danh sach */
 void SCH_Update(void){
 	if (SCH_count == 0) return;
+
+	/* Task dau da den han nhung vong while chua kip chay (vi task truoc chay qua 10 ms):
+	 * khong bo mat tick nay, ghi lai de dispatcher bu cho cac task phia sau */
+	if (SCH_tasks_G[0].RunMe){
+		SCH_lost_ticks++;
+		return;
+	}
 	if (SCH_tasks_G[0].Delay > 0) SCH_tasks_G[0].Delay--;
 	if (SCH_tasks_G[0].Delay == 0) SCH_tasks_G[0].RunMe = 1;
 }
@@ -121,7 +132,18 @@ void SCH_Update(void){
 void SCH_Dispatch_Tasks(void){
 	for (;;){
 		uint32_t pm = sch_lock();
+
+		/* Bu cac tick bi tre (neu co) cho task dau moi */
+		if (SCH_count > 0 && !SCH_tasks_G[0].RunMe && SCH_lost_ticks > 0){
+			SCH_lost_ticks--;
+			if (SCH_tasks_G[0].Delay > 0) SCH_tasks_G[0].Delay--;
+			sch_mark_head();
+			sch_unlock(pm);
+			continue;
+		}
+
 		if (SCH_count == 0 || !SCH_tasks_G[0].RunMe){
+			if (SCH_count == 0) SCH_lost_ticks = 0;
 			sch_unlock(pm);
 			return;                       /* khong con task den han */
 		}
