@@ -32,8 +32,14 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+/* [CORE] Quang - begin */
 #include "scheduler.h"
 #include "task_led_blinking.h"
+/* [CORE] Quang - end */
+/* [DRIVER] Phat - begin */
+/* [DRIVER] Phat - end */
+/* [FSM] Nguyen - begin */
+/* [FSM] Nguyen - end */
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
