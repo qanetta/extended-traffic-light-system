@@ -117,10 +117,19 @@ int main(void)
   /* [FSM] Nguyen - init end */
 
   SCH_Init();
+
+  /* Tick = 10 ms. Thu tu them = thu tu chay trong cung 1 tick */
+  /* [CORE] Quang - tasks begin */
   SCH_Add_Task(test_wdg_refresh, 0, SCH_MS(100));
   SCH_Add_Task(ledBlinking, 0, SCH_MS(500));
   SCH_Add_Task(test_one_shot, SCH_MS(3000), 0);
-  HAL_TIM_Base_Start_IT(&htim2);
+  /* [CORE] Quang - tasks end */
+  /* [DRIVER] Phat - tasks begin */
+  /* [DRIVER] Phat - tasks end */
+  /* [FSM] Nguyen - tasks begin */
+  /* [FSM] Nguyen - tasks end */
+
+  HAL_TIM_Base_Start_IT(&htim2);   /* bat tick sau khi da them du task */
   /* USER CODE END 2 */
 
   /* Infinite loop */
