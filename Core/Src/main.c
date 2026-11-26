@@ -65,8 +65,14 @@ static void MX_IWDG_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+/* [CORE] Quang - funcs begin */
 static void test_wdg_refresh(void){ HAL_IWDG_Refresh(&hiwdg); }
 static void test_one_shot(void){ HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_SET); }
+/* [CORE] Quang - funcs end */
+/* [DRIVER] Phat - funcs begin */
+/* [DRIVER] Phat - funcs end */
+/* [FSM] Nguyen - funcs begin */
+/* [FSM] Nguyen - funcs end */
 /* USER CODE END 0 */
 
 /**
@@ -102,6 +108,14 @@ int main(void)
   MX_I2C1_Init();
   MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
+  /* Khoi tao module (HAL_Delay chi duoc dung o day, truoc khi scheduler chay) */
+  /* [CORE] Quang - init begin */
+  /* [CORE] Quang - init end */
+  /* [DRIVER] Phat - init begin */
+  /* [DRIVER] Phat - init end */
+  /* [FSM] Nguyen - init begin */
+  /* [FSM] Nguyen - init end */
+
   SCH_Init();
   SCH_Add_Task(test_wdg_refresh, 0, SCH_MS(100));
   SCH_Add_Task(ledBlinking, 0, SCH_MS(500));
