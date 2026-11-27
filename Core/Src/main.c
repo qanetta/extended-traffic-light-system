@@ -110,6 +110,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   /* Khoi tao module (HAL_Delay chi duoc dung o day, truoc khi scheduler chay) */
   /* [CORE] Quang - init begin */
+  Traffic_Init();        /* 2 tuyen tat */
   /* [CORE] Quang - init end */
   /* [DRIVER] Phat - init begin */
   /* [DRIVER] Phat - init end */
@@ -120,6 +121,7 @@ int main(void)
 
   /* Tick = 10 ms. Thu tu them = thu tu chay trong cung 1 tick */
   /* [CORE] Quang - tasks begin */
+  SCH_Add_Task(Timer_Run, 0, 1);   /* software timer, 10 ms */
   SCH_Add_Task(test_wdg_refresh, 0, SCH_MS(100));
   SCH_Add_Task(ledBlinking, 0, SCH_MS(500));
   SCH_Add_Task(test_one_shot, SCH_MS(3000), 0);

@@ -35,6 +35,8 @@ extern "C" {
 /* [CORE] Quang - begin */
 #include "scheduler.h"
 #include "task_led_blinking.h"
+#include "software_timer.h"
+#include "traffic_light.h"
 /* [CORE] Quang - end */
 /* [DRIVER] Phat - begin */
 /* [DRIVER] Phat - end */
