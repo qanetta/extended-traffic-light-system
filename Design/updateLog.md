@@ -1,3 +1,6 @@
+v5_0
+- Thêm 5 ảnh FSM
+
 v4_0
 - Thêm Sequence Diagram cho Mode, DHT20 và chỉnh giờ
 
