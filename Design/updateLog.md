@@ -1,3 +1,6 @@
+v7_0
+- Thêm 5 Class Diagram
+
 v6_0
 - Đặc tả một số phương thức cần thiết
 
