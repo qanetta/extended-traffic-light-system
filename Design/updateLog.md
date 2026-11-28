@@ -1,3 +1,6 @@
+v6_0
+- Đặc tả một số phương thức cần thiết
+
 v5_0
 - Thêm 5 ảnh FSM
 
